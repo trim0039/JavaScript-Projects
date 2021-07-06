@@ -1,115 +1,95 @@
-'use strict';
+"use strict";
+
 //grabbing elements
-const score0El = document.querySelector('#score--0'); // selector for id!!!
-const score1El = document.getElementById('score--1'); // another way to do it, this is a little faster
-const diceEl = document.querySelector('.dice');
-const rollBtn = document.querySelector('.btn--roll');
-const holdBtn = document.querySelector('.btn--hold');
-const newBtn = document.querySelector('.btn--new');
-const cur0El = document.querySelector('#current--0');
-const cur1El = document.querySelector('#current--1');
-const player0El = document.querySelector('.player--0');
-const player1El = document.querySelector('.player--1');
+const score0El = document.querySelector("#score--0");
+const score1El = document.querySelector("#score--1");
+const diceEl = document.querySelector(".dice");
+const rollBtn = document.querySelector(".btn--roll");
+const holdBtn = document.querySelector(".btn--hold");
+const newBtn = document.querySelector(".btn--new");
+const cur0El = document.querySelector("#current--0");
+const cur1El = document.querySelector("#current--1");
+const player0El = document.querySelector(".player--0");
+const player1El = document.querySelector(".player--1");
 
-score0El.textContent = 0;
-score1El.textContent = 0;
-diceEl.classList.add('hidden');
-let curVal0 = 0;
-let curVal1 = 0;
-let curScore0 = 0;
-let curScore1 = 0;
-let p0turn = true;
+// setting up local vars to manipulate
+const players = [player0El, player1El];
+const curText = [cur0El, cur1El];
+const scoreText = [score0El, score1El];
+const curVal = [0, 0];
+const curScore = [0, 0];
+let activePlayer = 0;
 
+// function to display particular dice value
 const showDice = function (val) {
   diceEl.src = `dice-${val}.png`;
-  diceEl.classList.remove('hidden');
+  diceEl.classList.remove("hidden");
 };
 
+// random number fucntion for dice roll
 const rollDice = function () {
   return Math.trunc(Math.random() * 6 + 1);
 };
+
+// switch player function, use xor to flip to/from 0 or 1
 const switchPlayer = function () {
-  if (p0turn) {
-    p0turn = false;
-    curVal0 = 0;
-    cur0El.textContent = curVal0;
-    player0El.classList.remove('player--active');
-    player1El.classList.add('player--active');
-  } else {
-    p0turn = true;
-    curVal1 = 0;
-    cur1El.textContent = curVal1;
-    player1El.classList.remove('player--active');
-    player0El.classList.add('player--active');
-  }
+  curVal[activePlayer] = 0;
+  curText[activePlayer].textContent = curVal[activePlayer];
+  players[activePlayer].classList.remove("player--active");
+  activePlayer = activePlayer ^ 1;
+  players[activePlayer].classList.add("player--active");
 };
 
+// roll button event listener function
 const rollBtnPress = function () {
   const roll = rollDice();
   showDice(roll);
-  if (p0turn) {
-    if (roll > 1) {
-      curVal0 += roll;
-      cur0El.textContent = curVal0;
-    } else {
-      switchPlayer();
-    }
+  if (roll > 1) {
+    curVal[activePlayer] += roll;
+    curText[activePlayer].textContent = curVal[activePlayer];
   } else {
-    if (roll > 1) {
-      curVal1 += roll;
-      cur1El.textContent = curVal1;
-    } else {
-      switchPlayer();
-    }
+    switchPlayer();
   }
 };
 
+// hold button event lister function
 const holdBtnPress = function () {
-  if (p0turn) {
-    curScore0 += curVal0;
-    score0El.textContent = curScore0;
-    curVal0 = 0;
-    cur0El.textContent = curVal0;
-    if (score0El.textContent >= 100) {
-      rollBtn.removeEventListener('click', rollBtnPress);
-      holdBtn.removeEventListener('click', holdBtnPress);
-      player0El.classList.add('player--winner');
-    } else {
-      switchPlayer();
-    }
+  curScore[activePlayer] += curVal[activePlayer];
+  scoreText[activePlayer].textContent = curScore[activePlayer];
+  curVal[activePlayer] = 0;
+  curText[activePlayer].textContent = curVal[activePlayer];
+  if (curScore[activePlayer] >= 100) {
+    // remove button functionality because we have winner
+    rollBtn.removeEventListener("click", rollBtnPress);
+    holdBtn.removeEventListener("click", holdBtnPress);
+    players[activePlayer].classList.add("player--winner");
   } else {
-    curScore1 += curVal1;
-    score1El.textContent = curScore1;
-    curVal1 = 0;
-    cur1El.textContent = curVal1;
-    if (score1El.textContent >= 100) {
-      rollBtn.removeEventListener('click', rollBtnPress);
-      holdBtn.removeEventListener('click', holdBtnPress);
-      player1El.classList.add('player--winner');
-    } else {
-      switchPlayer();
-    }
+    switchPlayer();
   }
 };
 
+// new game button functionality
 const newBtnPress = function () {
-  curScore0 = 0;
-  curScore1 = 0;
-  curVal0 = 0;
-  curVal1 = 0;
-  score0El.textContent = curScore0;
-  score1El.textContent = curScore1;
-  cur0El.textContent = curVal0;
-  cur1El.textContent = curVal1;
-  player0El.classList.remove('player--winner');
-  player1El.classList.remove('player--winner');
-  p0turn = false;
+  curScore[0] = 0;
+  curScore[1] = 0;
+  curVal[0] = 0;
+  curVal[1] = 0;
+  score0El.textContent = curScore[0];
+  score1El.textContent = curScore[1];
+  curText[0].textContent = curVal[0];
+  curText[1].textContent = curVal[1];
+  players[0].classList.remove("player--winner");
+  players[1].classList.remove("player--winner");
+  // make sure switch player will switch to player 0
+  activePlayer = 1;
   switchPlayer();
-  rollBtn.addEventListener('click', rollBtnPress);
-  holdBtn.addEventListener('click', holdBtnPress);
-  diceEl.classList.add('hidden');
+  // add back event listeners and hide dice
+  rollBtn.addEventListener("click", rollBtnPress);
+  holdBtn.addEventListener("click", holdBtnPress);
+  diceEl.classList.add("hidden");
 };
 
-rollBtn.addEventListener('click', rollBtnPress);
-holdBtn.addEventListener('click', holdBtnPress);
-newBtn.addEventListener('click', newBtnPress);
+// initial game set up
+rollBtn.addEventListener("click", rollBtnPress);
+holdBtn.addEventListener("click", holdBtnPress);
+newBtn.addEventListener("click", newBtnPress);
