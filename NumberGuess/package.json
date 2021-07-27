@@ -1,0 +1,11 @@
+{
+  "name": "numberguess",
+  "version": "1.0.0",
+  "description": "",
+  "main": "script.js",
+  "scripts": {
+    "test": "cypress"
+  },
+  "author": "",
+  "license": "ISC"
+}
